@@ -23,6 +23,8 @@ def parse_options():  # pragma: no cover
     ver = '%prog 1.0.4'
 
     parser = optparse.OptionParser(usage=usage, description=desc, version=ver)
+    parser.add_option("-H", "--host", dest="host", default='127.0.0.1',
+                      help="Change listen host for Web edit.")
     parser.add_option("-p", "--port", dest="port", default=8222,
                       help="Change listen port for Web edit.")
     parser.add_option("-t", "--terminal", dest="term_edit",
@@ -57,6 +59,9 @@ def parse_options():  # pragma: no cover
     parser.add_option("-n", "--no_lazy_ol", dest="lazy_ol",
                       action='store_false', default=True,
                       help="Observe number of first item of ordered lists.")
+    parser.add_option("-d", "--headless", dest="headless",
+                      action='store_true', default=False,
+                      help="Run headless server")
 
     (options, args) = parser.parse_args()
 
@@ -73,13 +78,15 @@ def parse_options():  # pragma: no cover
     return {'input': input_file,
             'term_edit': options.term_edit or options.term_preview,
             'term_action': options.term_preview and 'p' or 'e',
+            'host': options.host,
             'port': options.port,
             'output': options.filename,
             'safe_mode': options.safe,
             'extensions': extensions,
             'encoding': options.encoding,
             'output_format': options.output_format,
-            'lazy_ol': options.lazy_ol}, options.verbose
+            'lazy_ol': options.lazy_ol,
+            'headless': options.headless}, options.verbose
 
 
 def main():
@@ -101,7 +108,8 @@ def main():
         terminal_edit.start(markdown_document, default_action=options['term_action'])
     else:
         from markdown_editor import web_edit
-        web_edit.start(markdown_document, port=options['port'])
+        web_edit.start(markdown_document, host=options['host'], port=options['port'],
+                       headless=options['headless'])
 
 
 if __name__ == '__main__':

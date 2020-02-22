@@ -135,7 +135,8 @@ def editor():
                     vim_mode='checked' if vim_mode == 'true' else '')
 
 
-def start(doc, custom_actions=None, title='', ajax_handlers=None, port=8222):
+def start(doc, custom_actions=None, title='', ajax_handlers=None, host='127.0.0.1', port=8222,
+          headless=False):
     default_actions = [WebAction('Preview', action_preview), WebAction('Close', action_close)]
 
     if doc.input_file or doc.output_file:
@@ -159,21 +160,22 @@ def start(doc, custom_actions=None, title='', ajax_handlers=None, port=8222):
         }
     }, make_namespaces=True)
 
-    # Find correct port automatically, to allow multiple sessions
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    while 1:
-        try:
-            s.bind(('127.0.0.1', port))
-            s.close()
-            break
-        except socket.error as e:
-            if e.errno == 98:
-                print("Port " + str(port) + " is already in use")
-                port = port + 1
+    if not headless:
+        # Find correct port automatically, to allow multiple sessions
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        while 1:
+            try:
+                s.bind((host, port))
+                s.close()
+                break
+            except socket.error as e:
+                if e.errno == 98:
+                    print("Port " + str(port) + " is already in use")
+                    port = port + 1
 
-    webbrowser.open('http://localhost:{}'.format(port))
+        webbrowser.open('http://{}:{}'.format(host, port))
 
-    run(app, host='localhost', port=port, debug=False, reloader=False)
+    run(app, host=host, port=port, debug=False, reloader=False)
 
 
 if __name__ == '__main__':
